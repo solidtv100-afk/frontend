@@ -1,4 +1,12 @@
-const BACKEND_URL = 'https://YOUR-BACKEND-URL/convert';
+/* ===============================
+   CONFIG
+================================ */
+
+const BACKEND_URL = 'https://YOUR-RENDER-SERVICE.onrender.com/convert';
+
+/* ===============================
+   ELEMENTS
+================================ */
 
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
@@ -6,12 +14,18 @@ const progressContainer = document.getElementById('progressContainer');
 const progressBar = document.getElementById('progressBar');
 const errorText = document.getElementById('errorText');
 
-// Click upload
+/* ===============================
+   CLICK UPLOAD
+================================ */
+
 dropZone.addEventListener('click', () => {
   fileInput.click();
 });
 
-// Drag events
+/* ===============================
+   DRAG & DROP
+================================ */
+
 dropZone.addEventListener('dragover', (e) => {
   e.preventDefault();
   dropZone.classList.add('border-blue-500');
@@ -24,13 +38,31 @@ dropZone.addEventListener('dragleave', () => {
 dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
   dropZone.classList.remove('border-blue-500');
+
+  if (e.dataTransfer.files.length !== 1) {
+    showError();
+    return;
+  }
+
   handleFile(e.dataTransfer.files[0]);
 });
 
-// File input
+/* ===============================
+   FILE INPUT
+================================ */
+
 fileInput.addEventListener('change', () => {
+  if (fileInput.files.length !== 1) {
+    showError();
+    return;
+  }
+
   handleFile(fileInput.files[0]);
 });
+
+/* ===============================
+   FILE VALIDATION
+================================ */
 
 function handleFile(file) {
   resetUI();
@@ -50,6 +82,10 @@ function handleFile(file) {
   uploadFile(file);
 }
 
+/* ===============================
+   UPLOAD
+================================ */
+
 function uploadFile(file) {
   const xhr = new XMLHttpRequest();
   const formData = new FormData();
@@ -57,44 +93,63 @@ function uploadFile(file) {
   formData.append('file', file);
 
   progressContainer.classList.remove('hidden');
+  progressBar.style.width = '0%';
 
   xhr.open('POST', BACKEND_URL, true);
   xhr.responseType = 'blob';
 
   xhr.upload.onprogress = (e) => {
     if (e.lengthComputable) {
-      const percent = (e.loaded / e.total) * 100;
+      const percent = Math.round((e.loaded / e.total) * 100);
       progressBar.style.width = percent + '%';
     }
   };
 
   xhr.onload = () => {
-    if (xhr.status === 200) {
+    resetProgress();
+
+    if (xhr.status === 200 && xhr.response) {
       autoDownload(xhr.response);
     } else {
       showError();
     }
-    resetProgress();
   };
 
   xhr.onerror = () => {
-    showError();
     resetProgress();
+    showError();
   };
 
   xhr.send(formData);
 }
 
+/* ===============================
+   MOBILE-SAFE AUTO DOWNLOAD
+================================ */
+
+/**
+ * WHY THIS METHOD:
+ * - Android Chrome blocks auto `download`
+ * - Opening blob in new tab ALWAYS works
+ * - User can save/share PDF manually
+ */
 function autoDownload(blob) {
-  const url = window.URL.createObjectURL(blob);
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
+
   a.href = url;
-  a.download = 'converted.pdf';
+  a.target = '_blank'; // ✅ REQUIRED FOR MOBILE
+
   document.body.appendChild(a);
   a.click();
   a.remove();
-  window.URL.revokeObjectURL(url);
+
+  URL.revokeObjectURL(url);
 }
+
+/* ===============================
+   UI HELPERS
+================================ */
 
 function showError() {
   errorText.classList.remove('hidden');
@@ -107,4 +162,4 @@ function resetProgress() {
 
 function resetUI() {
   errorText.classList.add('hidden');
-    }
+                           }
