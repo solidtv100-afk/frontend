@@ -1,12 +1,12 @@
-/* ===============================
-   CONFIG
-================================ */
+/* =====================================================
+   CONFIG — CHANGE ONLY THIS IF BACKEND URL CHANGES
+===================================================== */
 
-const BACKEND_URL = 'https://YOUR-RENDER-SERVICE.onrender.com/convert';
+const BACKEND_URL = 'https://jpg-to-pdf.onrender.com/convert';
 
-/* ===============================
-   ELEMENTS
-================================ */
+/* =====================================================
+   DOM ELEMENTS
+===================================================== */
 
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
@@ -14,17 +14,17 @@ const progressContainer = document.getElementById('progressContainer');
 const progressBar = document.getElementById('progressBar');
 const errorText = document.getElementById('errorText');
 
-/* ===============================
-   CLICK UPLOAD
-================================ */
+/* =====================================================
+   CLICK TO UPLOAD
+===================================================== */
 
 dropZone.addEventListener('click', () => {
   fileInput.click();
 });
 
-/* ===============================
-   DRAG & DROP
-================================ */
+/* =====================================================
+   DRAG & DROP SUPPORT
+===================================================== */
 
 dropZone.addEventListener('dragover', (e) => {
   e.preventDefault();
@@ -47,9 +47,9 @@ dropZone.addEventListener('drop', (e) => {
   handleFile(e.dataTransfer.files[0]);
 });
 
-/* ===============================
+/* =====================================================
    FILE INPUT
-================================ */
+===================================================== */
 
 fileInput.addEventListener('change', () => {
   if (fileInput.files.length !== 1) {
@@ -60,9 +60,9 @@ fileInput.addEventListener('change', () => {
   handleFile(fileInput.files[0]);
 });
 
-/* ===============================
-   FILE VALIDATION
-================================ */
+/* =====================================================
+   FILE VALIDATION (FRONTEND ONLY)
+===================================================== */
 
 function handleFile(file) {
   resetUI();
@@ -82,9 +82,9 @@ function handleFile(file) {
   uploadFile(file);
 }
 
-/* ===============================
-   UPLOAD
-================================ */
+/* =====================================================
+   UPLOAD + BACKEND CONNECTION
+===================================================== */
 
 function uploadFile(file) {
   const xhr = new XMLHttpRequest();
@@ -123,22 +123,17 @@ function uploadFile(file) {
   xhr.send(formData);
 }
 
-/* ===============================
-   MOBILE-SAFE AUTO DOWNLOAD
-================================ */
+/* =====================================================
+   MOBILE-SAFE PDF OPEN / DOWNLOAD
+===================================================== */
 
-/**
- * WHY THIS METHOD:
- * - Android Chrome blocks auto `download`
- * - Opening blob in new tab ALWAYS works
- * - User can save/share PDF manually
- */
 function autoDownload(blob) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
 
   a.href = url;
-  a.target = '_blank'; // ✅ REQUIRED FOR MOBILE
+  a.target = '_blank';   // REQUIRED for Android / iOS
+  a.rel = 'noopener';
 
   document.body.appendChild(a);
   a.click();
@@ -147,9 +142,9 @@ function autoDownload(blob) {
   URL.revokeObjectURL(url);
 }
 
-/* ===============================
+/* =====================================================
    UI HELPERS
-================================ */
+===================================================== */
 
 function showError() {
   errorText.classList.remove('hidden');
@@ -162,4 +157,4 @@ function resetProgress() {
 
 function resetUI() {
   errorText.classList.add('hidden');
-                           }
+}
